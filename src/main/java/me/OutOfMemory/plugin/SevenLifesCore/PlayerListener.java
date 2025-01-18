@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
 public class PlayerListener implements Listener {
@@ -35,6 +36,12 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        event.getPlayer().teleport(WarpSystem.getIslandLocation(IslandType.LOBBY));
+        if(GameManager.getInstance() != null && GameManager.getInstance().isGameRunning())
+            event.getPlayer().teleport(WarpSystem.getIslandLocation(IslandType.LOBBY));
+    }
+
+    @EventHandler
+    public void onPlayerExit(PlayerQuitEvent event) {
+        GameManager.getInstance().deletePlayer(event.getPlayer());
     }
 }

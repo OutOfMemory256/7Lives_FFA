@@ -1,10 +1,7 @@
 package me.OutOfMemory.plugin.SevenLifesCore;
 
 import me.OutOfMemory.plugin.Plugin;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -25,33 +22,49 @@ public class GameManager {
     public static void createGame(List<Player> players) {
         if(getInstance() != null && getInstance().isGameRunning())
             return;
-        GameManager gameManager = new GameManager(players);
 
-        gameManager.sendBroadcastMessage("Don't move!!!");
+        GameManager gameManager = new GameManager(players);
+        /*PlayerQuitController.createController(players);*/
+
+        for(Player player: players)
+            player.teleport(WarpSystem.getIslandLocation(IslandType.LOBBY));
+
+        gameManager.sendBroadcastTitle("Не двигайтесь", "во время падения!");
 
         new BukkitRunnable() {
             @Override
             public void run() {
                 List<Player> players = GameManager.gameManager.getInGamePlayers();
+
                 for(int i = 3; i >= 0; i--) {
+
                     for (Player player : players) {
-                        System.out.println("niggerman");
                         float progress = (float) i / 3.0f;
+
                         player.setExp(progress);
                         player.setLevel(i);
+
+                        if(i != 3)
+                            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
                     }
+
+                    if (i == 0)
+                        continue;
+
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+
                 }
+
                 new BukkitRunnable() {
                     @Override
                     public void run() {
                         gameManager.init();
                     }
-                }.runTaskLater(Plugin.getInstance(), 0);
+                }.runTask(Plugin.getInstance());
             }
         }.runTaskLaterAsynchronously(Plugin.getInstance(), 0);
     }
@@ -69,7 +82,7 @@ public class GameManager {
     }
 
     public void stopGame() {
-        sendBroadcastMessage("Game ended");
+        sendBroadcastTitle("Game ended", "");
         for(Player player: Bukkit.getOnlinePlayers()) {
             player.setGameMode(GameMode.ADVENTURE);
             player.teleport(WarpSystem.getIslandLocation(IslandType.LOBBY));
@@ -84,17 +97,13 @@ public class GameManager {
     }
 
     public void stopGame(Player player) {
-        sendBroadcastMessage(player.getName() + "WINS!!!");
+        sendBroadcastTitle(player.getName() + "WINS!!!", "");
         stopGame();
     }
 
-    private void sendBroadcastMessage(String message) {
-        for(Player player: inGamePlayers) {
-            player.sendTitle(message, "");
-        }
-
-        for(Player player: deadPlayers) {
-            player.sendTitle(message, "");
+    private void sendBroadcastTitle(String title, String s1) {
+        for(Player player: Bukkit.getOnlinePlayers()) {
+            player.sendTitle(title, s1);
         }
     }
 

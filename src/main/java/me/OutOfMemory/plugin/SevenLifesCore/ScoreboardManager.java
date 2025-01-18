@@ -37,8 +37,11 @@ public class ScoreboardManager {
     }
 
     public void addDeath(Player player) {
-        int deathCount = map.get(player) + 1;
-        map.put(player, deathCount);
+        int deathCount = map.get(player);
+        if(deathCount >= 7)
+            return;
+
+        map.put(player, deathCount++);
 
         if(deathCount >= 7) {
             GameManager.getInstance().deletePlayer(player);
