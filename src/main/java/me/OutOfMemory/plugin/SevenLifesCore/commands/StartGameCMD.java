@@ -1,5 +1,6 @@
-package me.OutOfMemory.plugin.SevenLifesCore;
+package me.OutOfMemory.plugin.SevenLifesCore.commands;
 
+import me.OutOfMemory.plugin.SevenLifesCore.GameManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

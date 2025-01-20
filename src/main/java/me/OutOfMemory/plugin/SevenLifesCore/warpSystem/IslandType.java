@@ -1,4 +1,4 @@
-package me.OutOfMemory.plugin.SevenLifesCore;
+package me.OutOfMemory.plugin.SevenLifesCore.warpSystem;
 
 public enum IslandType {
     MINI_LAKE,

@@ -1,6 +1,8 @@
 package me.OutOfMemory.plugin.SevenLifesCore;
 
 import me.OutOfMemory.plugin.Plugin;
+import me.OutOfMemory.plugin.SevenLifesCore.warpSystem.IslandType;
+import me.OutOfMemory.plugin.SevenLifesCore.warpSystem.WarpManager;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -9,13 +11,18 @@ import java.util.*;
 
 public class GameManager {
     private static GameManager gameManager;
-    private final List<Player> inGamePlayers;
-    private final List<Player> deadPlayers = new ArrayList<>();
-    private final Map<Player, Location> map = new HashMap<>();
+
+    private final List<UUID> inGamePlayers = new ArrayList<>();
+    private final List<UUID> deadPlayers = new ArrayList<>();
+
+    private final Map<UUID, Location> islandsLocations = new HashMap<>();
+
     private boolean isGameRunning = false;
 
     private GameManager(List<Player> players) {
-        this.inGamePlayers = players;
+        for(Player player: players) {
+            inGamePlayers.add(player.getUniqueId());
+        }
         gameManager = this;
     }
 
@@ -24,21 +31,26 @@ public class GameManager {
             return;
 
         GameManager gameManager = new GameManager(players);
-        /*PlayerQuitController.createController(players);*/
+        PlayerQuitController.createController(players);
 
         for(Player player: players)
-            player.teleport(WarpSystem.getIslandLocation(IslandType.LOBBY));
+            player.teleport(WarpManager.getIslandLocation(IslandType.LOBBY));
 
         gameManager.sendBroadcastTitle("Не двигайтесь", "во время падения!");
 
         new BukkitRunnable() {
             @Override
             public void run() {
-                List<Player> players = GameManager.gameManager.getInGamePlayers();
+                List<UUID> players = GameManager.gameManager.getInGamePlayers();
 
                 for(int i = 3; i >= 0; i--) {
 
-                    for (Player player : players) {
+                    for (UUID uuid : players) {
+                        Player player = Bukkit.getPlayer(uuid);
+                        if(player == null) {
+                            System.out.println("Player is null while exp scorebar is initing");
+                            continue;
+                        }
                         float progress = (float) i / 3.0f;
 
                         player.setExp(progress);
@@ -69,14 +81,27 @@ public class GameManager {
         }.runTaskLaterAsynchronously(Plugin.getInstance(), 0);
     }
 
-    public void deletePlayer(Player player) {
-        inGamePlayers.remove(player);
-        deadPlayers.add(player);
+    public void deletePlayer(UUID uuid) {
+        inGamePlayers.remove(uuid);
+        deadPlayers.add(uuid);
+
+        Player player = Bukkit.getPlayer(uuid);
+        if(player == null) {
+            System.out.println("Can not delete player because player is null!");
+            return;
+        }
 
         player.setGameMode(GameMode.SPECTATOR);
 
         if(inGamePlayers.size() == 1 && !deadPlayers.isEmpty())
-            stopGame(inGamePlayers.get(0));
+            stopGame();
+        else if (inGamePlayers.isEmpty())
+            stopGame();
+    }
+
+    public void updateGameState() {
+        if(inGamePlayers.size() == 1 && !deadPlayers.isEmpty())
+            stopGame();
         else if (inGamePlayers.isEmpty())
             stopGame();
     }
@@ -85,7 +110,10 @@ public class GameManager {
         sendBroadcastTitle("Game ended", "");
         for(Player player: Bukkit.getOnlinePlayers()) {
             player.setGameMode(GameMode.ADVENTURE);
-            player.teleport(WarpSystem.getIslandLocation(IslandType.LOBBY));
+            player.setHealth(20.0);
+            player.setFoodLevel(20);
+            player.getInventory().clear();
+            player.teleport(WarpManager.getIslandLocation(IslandType.LOBBY));
         }
 
         ScoreboardManager.getScoreboardManager().deleteScoreboard(getInGamePlayers());
@@ -98,6 +126,7 @@ public class GameManager {
 
     public void stopGame(Player player) {
         sendBroadcastTitle(player.getName() + "WINS!!!", "");
+        System.out.println("Player wins");
         stopGame();
     }
 
@@ -123,11 +152,19 @@ public class GameManager {
                     System.out.println("players have been sent on islands");
                 }
 
-                Player player = inGamePlayers.get(j);
+                Player player = Bukkit.getPlayer(inGamePlayers.get(j));
+                if(player == null) {
+                    System.out.println("Player is null while game is initializing!");
+                    continue;
+                }
 
-                map.put(player, WarpSystem.getIslandLocation(types.get(i)));
-                player.teleport(WarpSystem.getIslandLocation(types.get(i)));
+                islandsLocations.put(inGamePlayers.get(j), WarpManager.getIslandLocation(types.get(i)));
+                player.teleport(WarpManager.getIslandLocation(types.get(i)));
                 player.setGameMode(GameMode.SURVIVAL);
+
+                player.setHealth(20.0);
+                player.setFoodLevel(20);
+                player.getInventory().clear();
 
                 System.out.println("teleported");
                 j++;
@@ -161,7 +198,7 @@ public class GameManager {
         return gameManager;
     }
 
-    public List<Player> getInGamePlayers() {
+    public List<UUID> getInGamePlayers() {
         return inGamePlayers;
     }
 
@@ -169,7 +206,7 @@ public class GameManager {
         return isGameRunning;
     }
 
-    public Map<Player, Location> getMap() {
-        return map;
+    public Map<UUID, Location> getMap() {
+        return islandsLocations;
     }
 }

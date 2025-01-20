@@ -1,5 +1,5 @@
 name: Plugin
-version: '0.72-ALPHA'
+version: '0.758-ALPHA-UNSTABLE'
 main: me.OutOfMemory.plugin.Plugin
 api-version: '1.20'
 
