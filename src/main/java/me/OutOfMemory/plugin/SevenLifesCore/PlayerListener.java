@@ -58,6 +58,7 @@ public class PlayerListener implements Listener {
         } else if (GameManager.getInstance().getInGamePlayers().contains(event.getPlayer().getUniqueId())) {
             System.out.println("negridos");
             PlayerQuitController.getInstance().setInGame(event.getPlayer(), true);
+            ScoreboardManager.getScoreboardManager().showScoreboard(event.getPlayer());
         } else
             event.getPlayer().teleport(WarpManager.getIslandLocation(IslandType.LOBBY));
     }
@@ -74,6 +75,6 @@ public class PlayerListener implements Listener {
             return;
         System.out.println("nied");
         PlayerQuitController.getInstance().setInGame(event.getPlayer(), false);
-        GameManager.getInstance().updateGameState();
+       // GameManager.getInstance().updateGameState();
     }
 }

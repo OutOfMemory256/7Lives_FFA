@@ -32,17 +32,18 @@ public class PlayerQuitController {
 
                 new BukkitRunnable() {
                 OnlinePlayerState state = entry.getKey();
-                Integer timer = entry.getValue();
+                Integer timer = 300;
                     @Override
                     public void run() {
                         System.out.println(entry.getKey().player.getName() + 3);
                         while (!state.getInGame()) {
                             if(timer == 0) {
                                 GameManager.getInstance().deletePlayer(entry.getKey().player.getUniqueId());
+                                System.out.println("Timer cancelled");
                                 return;
                             }
                             try {
-                                Thread.sleep(1);
+                                Thread.sleep(20);
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
                             }

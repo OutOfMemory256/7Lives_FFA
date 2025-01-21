@@ -7,7 +7,6 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +19,7 @@ public class ScoreboardManager {
     private Scoreboard scoreboard;
     private final DisplaySlot slot = DisplaySlot.SIDEBAR;
     private Objective objective;
-    private HashMap<Player, Integer> map;
+    private HashMap<UUID, Integer> map;
 
     public void init(List<UUID> players) {
         scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
@@ -36,7 +35,7 @@ public class ScoreboardManager {
                 System.out.println("player is null while scoreboard is initializing!");
                 continue;
             }
-            map.put(player, 0);
+            map.put(player.getUniqueId(), 0);
             Score score = objective.getScore(player.getName());
             score.setScore(0);
         }
@@ -44,11 +43,11 @@ public class ScoreboardManager {
     }
 
     public void addDeath(Player player) {
-        int deathCount = map.get(player);
+        int deathCount = map.get(player.getUniqueId());
         if(deathCount >= 7)
             return;
 
-        map.put(player, ++deathCount);
+        map.put(player.getUniqueId(), ++deathCount);
 
         if(deathCount >= 7) {
             GameManager.getInstance().deletePlayer(player.getUniqueId());
@@ -56,10 +55,15 @@ public class ScoreboardManager {
     }
 
     public void updateScoreboard(List<UUID> players) {
-        for(Map.Entry<Player, Integer> entry: map.entrySet()) {
-            if(entry != null)
-                objective.getScore(entry.getKey()).setScore(entry.getValue());
-            else
+        for(Map.Entry<UUID, Integer> entry: map.entrySet()) {
+            if(entry != null) {
+                Player player = Bukkit.getPlayer(entry.getKey());
+                if(player == null) {
+                    System.out.println("Player is null while scoreboard updating!");
+                    continue;
+                }
+                objective.getScore(player).setScore(entry.getValue());
+            } else
                 System.out.println("null");
         }
 
@@ -71,6 +75,10 @@ public class ScoreboardManager {
             }
             player.setScoreboard(scoreboard);
         }
+    }
+
+    public void showScoreboard(Player player) {
+        player.setScoreboard(scoreboard);
     }
 
     public void deleteScoreboard(List<UUID> players) {
