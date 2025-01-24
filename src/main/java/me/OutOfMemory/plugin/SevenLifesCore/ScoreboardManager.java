@@ -64,7 +64,7 @@ public class ScoreboardManager {
                 }
                 objective.getScore(player).setScore(entry.getValue());
             } else
-                System.out.println("null");
+                System.out.println("Player is null while scoreboard updating!");
         }
 
         for(UUID uuid: players) {

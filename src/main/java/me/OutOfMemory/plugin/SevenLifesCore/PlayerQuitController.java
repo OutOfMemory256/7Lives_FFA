@@ -26,31 +26,33 @@ public class PlayerQuitController {
 
     public void updateController() {
         for(Map.Entry<OnlinePlayerState, Integer> entry: map.entrySet()) {
-            System.out.println(entry.getKey().player.getName() + 1);
+
             if(!entry.getKey().inGame)
-                System.out.println("statee " + entry.getKey().getInGame());
 
                 new BukkitRunnable() {
+
                 OnlinePlayerState state = entry.getKey();
-                Integer timer = 300;
+                Integer timer = state.getTimer();
+
                     @Override
                     public void run() {
-                        System.out.println(entry.getKey().player.getName() + 3);
                         while (!state.getInGame()) {
                             if(timer == 0) {
                                 GameManager.getInstance().deletePlayer(entry.getKey().player.getUniqueId());
-                                System.out.println("Timer cancelled");
                                 return;
                             }
+
                             try {
-                                Thread.sleep(20);
+                                Thread.sleep(1000);
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
                             }
+
                             timer--;
                             System.out.println(entry.getKey().player.getName() + 4);
                         }
                     }
+
                 }.runTaskAsynchronously(Plugin.getInstance());
         }
     }
@@ -78,6 +80,7 @@ public class PlayerQuitController {
     public class OnlinePlayerState {
         private final Player player;
         private volatile Boolean inGame = true;
+        private volatile Integer timer = 300;
 
         private final PlayerQuitController controller;
 
@@ -96,6 +99,10 @@ public class PlayerQuitController {
 
         public void setInGame(boolean inGame) {
             this.inGame = inGame;
+        }
+
+        public Integer getTimer() {
+            return timer;
         }
     }
 }

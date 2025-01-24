@@ -116,8 +116,11 @@ public class GameManager {
             player.teleport(WarpManager.getIslandLocation(IslandType.LOBBY));
         }
 
-        ScoreboardManager.getScoreboardManager().deleteScoreboard(getInGamePlayers());
-        ScoreboardManager.getScoreboardManager().deleteScoreboard(deadPlayers);
+        ArrayList<UUID> uuids = new ArrayList<>();
+        for(Player player: Bukkit.getOnlinePlayers())
+            uuids.add(player.getUniqueId());
+
+        ScoreboardManager.getScoreboardManager().deleteScoreboard(uuids);
 
         setEndWeather();
 
