@@ -5,4 +5,14 @@ api-version: '1.20'
 
 commands:
   startGame:
+    permission: 7lives.commands.start-game
+    permission-message: "Нет прав на использование данной команды!"
   stopGame:
+    permission: 7lives.commands.stop-game
+    permission-message: "Нет прав на использование данной команды!"
+
+permissions:
+  7lives.commands.start-game:
+    default: op
+  7lives.commands.stop-game:
+    default: op
